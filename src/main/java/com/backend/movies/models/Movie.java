@@ -27,10 +27,6 @@ public class Movie {
     
     @Column(name = "image_url")
     private String imageUrl;
-    
-    
-    
-
     /**
      * @return the id
      */
