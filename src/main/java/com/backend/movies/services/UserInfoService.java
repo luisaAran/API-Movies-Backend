@@ -2,6 +2,7 @@ package com.backend.movies.services;
 
 import com.backend.movies.models.UserInfo;
 import com.backend.movies.repositories.UserRepository;
+import com.backend.movies.utils.ApplicationRole;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -30,7 +31,14 @@ public class UserInfoService implements UserDetailsService {
     }
     public String addUser(UserInfo userInfo){
         userInfo.setPassword(encoder.encode(userInfo.getPassword()));
+        userInfo.setRole(ApplicationRole.ROLE_USER);
         repository.save(userInfo);
         return "User added successfully";
+    }
+    public String addAdmin(UserInfo userInfo){
+        userInfo.setPassword(encoder.encode(userInfo.getPassword()));
+        userInfo.setRole(ApplicationRole.ROLE_ADMIN);
+        repository.save(userInfo);
+        return "Admin added successfully";
     }
 }

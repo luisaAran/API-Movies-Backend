@@ -14,7 +14,7 @@ public class UserInfoDetails implements org.springframework.security.core.userde
     public UserInfoDetails(UserInfo userInfo){
         this.username = userInfo.getEmail();
         this.password = userInfo.getPassword();
-        this.authority = new SimpleGrantedAuthority(userInfo.getRole());
+        this.authority = new SimpleGrantedAuthority(userInfo.getRole().name());
     }
 
     @Override

@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/users")
-@RequiredArgsConstructor
 public class UserController {
     private UserInfoService userInfoService;
     private AuthenticationManager authenticationManager;
@@ -29,7 +28,12 @@ public class UserController {
     @CrossOrigin
     @PostMapping
     public String createUser(@RequestBody UserInfo userInfo){
+        System.out.println(userInfo.toString());
         return this.userInfoService.addUser(userInfo);
+    }
+    @PostMapping("/admin")
+    public String createAdmin(@RequestBody UserInfo userInfo){
+        return this.userInfoService.addAdmin(userInfo);
     }
     @PostMapping("/generateToken")
     public String authAndGetToken(@RequestBody AuthRequest authRequest){

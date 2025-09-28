@@ -31,6 +31,7 @@ public class MovieController {
     public List<Movie> getAllMovies() {
         return movieRepository.findAll();
     }
+    
 
     @CrossOrigin
     @PostMapping
