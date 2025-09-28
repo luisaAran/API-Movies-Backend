@@ -12,7 +12,10 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.Data;
 
-
+/**
+ * @Author: luisaAran
+ * Entidad que representa una pelicula en la base de datos.
+ */
 @Entity
 @Data
 @Table(name = "movies")
