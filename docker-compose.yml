@@ -16,7 +16,7 @@ services:
     image: mysql:8.0
     container_name: mysql_db
     environment:
-      -MYSQL_ROOT_PASSWORD: luisaAranSecretDBPassword12345
+      MYSQL_ROOT_PASSWORD: luisaAranSecretDBPassword12345
       MYSQL_DATABASE: movies
       MYSQL_USER: luisaAran
       MYSQL_PASSWORD: LuisaAran650478
