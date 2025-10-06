@@ -3,12 +3,12 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 package com.backend.movies.controllers;
-
+import com.backend.movies.dto.MovieCreateDTO;
+import com.backend.movies.dto.MovieUpdateDTO;
 import com.backend.movies.models.Movie;
-import com.backend.movies.repositories.MovieRepository;
 import java.util.List;
-import java.util.Optional;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.backend.movies.services.MovieService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -23,60 +23,45 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/movies")
 public class MovieController {
-    @Autowired
-    private MovieRepository movieRepository;
-
+    private final MovieService movieService;
+    public MovieController(MovieService movieService){
+        this.movieService = movieService;
+    }
     @CrossOrigin
     @GetMapping
     public List<Movie> getAllMovies() {
-        return movieRepository.findAll();
+        return movieService.findAll();
     }
-    
-
     @CrossOrigin
     @PostMapping
-    public ResponseEntity<Movie> createMovie(@RequestBody Movie movie) {
-        Movie savedMovie = movieRepository.save(movie);
+    public ResponseEntity<Movie> createMovie(@RequestBody @Valid MovieCreateDTO dto) {
+        Movie savedMovie = movieService.createMovie(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(savedMovie);
     }
     @CrossOrigin
     @GetMapping("/{id}")
     public ResponseEntity<Movie> getMovieById(@PathVariable Long id) {
-        Optional<Movie> movie = movieRepository.findById(id);
-        return movie.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+        return ResponseEntity.ok(movieService.findById(id));
     }
 
     @CrossOrigin
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteMovie(@PathVariable Long id){
-        movieRepository.deleteById(id);
+        movieService.deleteById(id);
         return ResponseEntity.noContent().build();
     }
     
     @CrossOrigin
     @PutMapping("/{id}")
-    public ResponseEntity<Movie> updateMovie(@PathVariable Long id, @RequestBody Movie updateMovie){
-        updateMovie.setId(id);
-        Movie saveMovie = movieRepository.save(updateMovie);
-        return ResponseEntity.ok(saveMovie);
+    public ResponseEntity<Movie> updateMovie(@PathVariable Long id, @RequestBody @Valid MovieUpdateDTO dto){
+        Movie updatedMovie = movieService.updateMovieById(id, dto);
+        return ResponseEntity.ok(updatedMovie);
     }
-    
-    
+
     @CrossOrigin
-    @GetMapping("/vote/{id}/{rating}")
-    public ResponseEntity<Movie> voteMovie(@PathVariable Long id, @PathVariable double rating){
-
-        Optional<Movie> optional = movieRepository.findById(id);
-        Movie movie = optional.get();
-
-        double newRating = ((movie.getVotes() * movie.getRating())+rating) / (movie.getVotes() + 1);
-
-        movie.setVotes(movie.getVotes() + 1);
-        movie.setRating(newRating);
-
-        Movie savedMovie = movieRepository.save(movie);
-        return ResponseEntity.ok(savedMovie);
-
+    @PutMapping("/vote/{id}")
+    public ResponseEntity<Movie> voteMovie(@PathVariable Long id, @RequestBody double rating){
+        return ResponseEntity.ok(movieService.rateMovie(id, rating));
     }
 
     

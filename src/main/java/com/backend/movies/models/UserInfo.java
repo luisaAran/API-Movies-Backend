@@ -3,6 +3,7 @@ package com.backend.movies.models;
 import com.backend.movies.utils.ApplicationRole;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -25,8 +26,10 @@ public class UserInfo {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
+    @NotBlank
     @Email
     private String email;
+    @NotBlank
     @Size(min = 6)
     private String password;
     private String address;

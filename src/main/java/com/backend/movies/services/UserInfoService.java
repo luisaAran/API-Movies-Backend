@@ -1,7 +1,9 @@
 package com.backend.movies.services;
 
-import com.backend.movies.dto.UserDto;
 import com.backend.movies.dto.UserUpdateDTO;
+import com.backend.movies.exceptions.AuthException;
+import com.backend.movies.exceptions.DuplicatedResourceException;
+import com.backend.movies.exceptions.ResourceNotFoundException;
 import com.backend.movies.models.UserInfo;
 import com.backend.movies.repositories.UserRepository;
 import com.backend.movies.utils.ApplicationRole;
@@ -45,7 +47,7 @@ public class UserInfoService implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException{
         Optional<UserInfo> user = repository.findByEmail(username);
         if(user.isEmpty()){
-            throw new UsernameNotFoundException("User not found");
+            throw new AuthException("Credenciales inválidas");
         }
         UserInfo userInfo = user.get();
         return new UserInfoDetails(userInfo);
@@ -62,12 +64,12 @@ public class UserInfoService implements UserDetailsService {
          * como uso de caché, para evitar consultas repetitivas a la base de datos
          */
         if(repository.existsByEmail(userInfo.getEmail())){
-            throw new IllegalArgumentException("Email already in use");
+            throw new DuplicatedResourceException("Email se encuentra en uso");
         }
         userInfo.setPassword(encoder.encode(userInfo.getPassword()));
         userInfo.setRole(ApplicationRole.ROLE_USER);
         repository.save(userInfo);
-        return "User added successfully";
+        return "Usuario añadido exitosamente!";
     }
 
     /**
@@ -77,7 +79,7 @@ public class UserInfoService implements UserDetailsService {
      */
     public String addAdmin(UserInfo userInfo){
         if(repository.existsByEmail(userInfo.getEmail())){
-            throw new IllegalArgumentException("Email already in use");
+            throw new DuplicatedResourceException("Email se encuentra en uso");
         }
         userInfo.setPassword(encoder.encode(userInfo.getPassword()));
         userInfo.setRole(ApplicationRole.ROLE_ADMIN);
@@ -87,9 +89,9 @@ public class UserInfoService implements UserDetailsService {
     public String deleteUserById(Long id) {
         if(repository.existsById(id)){
             repository.deleteById(id);
-            return "User deleted successfully";
+            return "Usuario eliminado exitosamente!";
         }
-        throw new IllegalArgumentException("No existe el usuario con el id: " + id);
+        throw new ResourceNotFoundException("No existe el usuario");
     }
 
     /**
@@ -98,29 +100,32 @@ public class UserInfoService implements UserDetailsService {
      * @param dto
      * @return
      */
-    public String updateUser(Long id, @Valid UserUpdateDTO dto) {
+    public UserInfo updateUser(Long id, @Valid UserUpdateDTO dto) {
         Optional<UserInfo> userInfoOptional = repository.findById(id);
         if(userInfoOptional.isEmpty()){
-            throw new IllegalArgumentException("User doesn't exist");
+            throw new ResourceNotFoundException("No existe el usuario");
         }
         UserInfo userInfo = userInfoOptional.get();
         if(dto.getName() != null){
             userInfo.setName(dto.getName());
         }
         if(dto.getPassword() != null){
-            userInfo.setPassword(dto.getPassword());
+            userInfo.setPassword(encoder.encode(dto.getPassword()));
         }
         if(dto.getAddress() != null){
             userInfo.setAddress(dto.getAddress());
         }
         if(dto.getEmail() != null){
+            if(repository.existsByEmail(dto.getEmail()) &&
+                    !userInfo.getEmail().equals(dto.getEmail())){
+                throw new DuplicatedResourceException("El email ya se encuentra en uso");
+            }
             userInfo.setEmail(dto.getEmail());
         }
         if(dto.getPhoneNumber() != null){
             userInfo.setPhone_number(dto.getPhoneNumber());
         }
-        repository.save(userInfo);
-        return "User updated successfully";
+        return repository.save(userInfo);
     }
 
     /**
@@ -128,18 +133,11 @@ public class UserInfoService implements UserDetailsService {
      * @param id
      * @return
      */
-    public UserDto getUserById(Long id) {
+    public UserInfo getUserById(Long id) {
         Optional<UserInfo> userInfoOptional = repository.findById(id);
         if(userInfoOptional.isEmpty()){
-            throw new IllegalArgumentException("User doesn't exist");
+            throw new ResourceNotFoundException("No existe el usuario");
         }
-        UserInfo userInfo = userInfoOptional.get();
-        return UserDto.builder()
-                .id(userInfo.getId())
-                .email(userInfo.getEmail())
-                .address(userInfo.getAddress())
-                .phoneNumber(userInfo.getPhone_number())
-                .name(userInfo.getName())
-                .build();
+        return  userInfoOptional.get();
     }
 }

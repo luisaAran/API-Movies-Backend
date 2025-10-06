@@ -1,16 +1,17 @@
 package com.backend.movies.controllers;
 
 import com.backend.movies.dto.AuthRequest;
-import com.backend.movies.dto.UserDto;
 import com.backend.movies.dto.UserUpdateDTO;
+import com.backend.movies.exceptions.AuthException;
+import com.backend.movies.exceptions.ResourceNotFoundException;
 import com.backend.movies.models.UserInfo;
 import com.backend.movies.services.JwtService;
 import com.backend.movies.services.UserInfoService;
 import jakarta.validation.Valid;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -42,8 +43,8 @@ public class UserController {
      * @return
      */
     @GetMapping("/{id}")
-    public UserDto getUserById(@PathVariable Long id){
-        return this.userInfoService.getUserById(id);
+    public ResponseEntity<UserInfo> getUserById(@PathVariable Long id){
+        return ResponseEntity.ok(userInfoService.getUserById(id));
     }
     /**
      * Endpoint para la creación de usuarios. Valida la petición y
@@ -54,8 +55,8 @@ public class UserController {
      */
     @CrossOrigin
     @PostMapping
-    public String createUser(@Valid @RequestBody UserInfo userInfo){
-        return this.userInfoService.addUser(userInfo);
+    public ResponseEntity<String> createUser(@Valid @RequestBody UserInfo userInfo){
+        return ResponseEntity.ok(userInfoService.addUser(userInfo));
     }
 
     /**
@@ -64,10 +65,9 @@ public class UserController {
      * @return
      */
     @PostMapping("/admin")
-    public String createAdmin(@Valid @RequestBody UserInfo userInfo){
-        return this.userInfoService.addAdmin(userInfo);
+    public ResponseEntity<String> createAdmin(@Valid @RequestBody UserInfo userInfo){
+        return ResponseEntity.ok(userInfoService.addAdmin(userInfo));
     }
-
     /**
      * Endpoint para la auntenticación de usuarios. Valida la petición
      * y, si es correcta, llama al servicio JWT para generar un nuevo token
@@ -75,7 +75,7 @@ public class UserController {
      * @return
      */
     @PostMapping("/generateToken")
-    public String authAndGetToken(@Valid @RequestBody AuthRequest authRequest){
+    public ResponseEntity<String> authAndGetToken(@Valid @RequestBody AuthRequest authRequest){
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         authRequest.getUsername(),
@@ -83,12 +83,11 @@ public class UserController {
                 )
         );
         if(authentication.isAuthenticated()){
-            return this.jwtService.generateToken(authRequest.getUsername());
+            return ResponseEntity.ok(jwtService.generateToken(authRequest.getUsername()));
         }else{
-            throw new UsernameNotFoundException("Invalid user Request");
+            throw new AuthException("Usuario no autenticado");
         }
     }
-
     /**
      * Endpoint para la actualización de usuarios.
      * Valida la peticion a traves del DTO y llama a la capa de servicio
@@ -97,17 +96,16 @@ public class UserController {
      * @return
      */
     @PutMapping("/{id}")
-    public String updateUser(@PathVariable Long id, @Valid @RequestBody UserUpdateDTO userUpdateDTO){
-        return this.userInfoService.updateUser(id, userUpdateDTO);
+    public ResponseEntity<UserInfo> updateUser(@PathVariable Long id, @Valid @RequestBody UserUpdateDTO userUpdateDTO){
+        return ResponseEntity.ok(userInfoService.updateUser(id, userUpdateDTO));
     }
-
     /**
      * Endpoint para la eliminación de usuarios.
      * @param id
      * @return
      */
     @DeleteMapping("/{id}")
-    public String deleteUser(@PathVariable Long id){
-        return this.userInfoService.deleteUserById(id);
+    public ResponseEntity<String> deleteUser(@PathVariable Long id){
+        return ResponseEntity.ok(userInfoService.deleteUserById(id));
     }
 }

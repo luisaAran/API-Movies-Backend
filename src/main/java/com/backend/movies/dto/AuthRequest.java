@@ -1,6 +1,6 @@
 package com.backend.movies.dto;
-
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 /**
@@ -13,10 +13,10 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 public class AuthRequest {
-    @NonNull
+    @NotBlank
     @Email
     private String username;
-    @NonNull
+    @NotBlank
     @Size(min=6)
     private String password;
 }
